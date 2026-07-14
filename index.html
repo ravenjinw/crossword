@@ -19,6 +19,8 @@
     --text: #1d1818;
     --text-soft: #9C8C89;
     --shadow: 0 8px 0 rgba(0,0,0,0.06);
+    --cell-size: 35px;
+    --cell-gap: 4px;
   }
   *{ box-sizing: border-box; }
   body{
@@ -170,19 +172,19 @@
     display:flex;
     justify-content:center;
     margin-bottom: 18px;
-    overflow: hidden;
     padding-bottom: 4px;
     width: 100%;
   }
   .grid{
     display:grid;
-    gap: 0px;
+    gap: var(--cell-gap);
     width: fit-content;
+    max-width: 100%;
   }
   .cellwrap{
     position: relative;
-    width: 35px;
-    height: 35px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -190,8 +192,8 @@
   .cell,
   .cell-block{
     box-sizing: border-box;
-    width: 35px;
-    height: 35px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     border: 2px solid #F2D9C3;
     border-radius: 8px;
   }
@@ -209,8 +211,8 @@
   }
   .cell{
     box-sizing: border-box;
-    width: 35px;
-    height: 35px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     border-radius: 8px;
     border: 2px solid #F2D9C3;
     background: #FFFDFB;
@@ -254,8 +256,8 @@
   }
   .cell-block{
     box-sizing: border-box;
-    width: 35px;
-    height: 35px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     border-radius: 8px;
     border: 2px solid #F2D9C3;
     background: repeating-linear-gradient(45deg, #EADFD3, #EADFD3 4px, #F5EAE0 4px, #F5EAE0 8px);
@@ -312,7 +314,8 @@
 <body>
 <div class="wrap">
   <h1>🐱 CROSSWORD PUZZLE 🐱</h1>
-  <p class="sub">진운(@ravenjinw)이 만든 아기 고양이 전용 퍼즐. 질문을 읽고 알맞은 정답을 채워보세요.</p>
+  <p class="sub">진운(@ravenjinw)이 만든 아기 고양이 전용 퍼즐.</p>
+  <p class="sub">질문을 읽고 알맞은 정답을 채워보세요.</p>
 
   <div class="card" id="gameCard">
     <div class="confetti" id="confetti"></div>
@@ -463,6 +466,7 @@ Object.keys(cells).forEach(k=>{
 const ROWS = maxR-minR+1, COLS = maxC-minC+1;
 
 const gridEl = document.getElementById('grid');
+const gridHolderEl = document.querySelector('.grid-holder');
 const legendEl = document.getElementById('legend');
 const bubbleEl = document.getElementById('bubble');
 const mascotEl = document.getElementById('mascot');
@@ -488,9 +492,42 @@ function renderLegend(){
 }
 
 // 4) 그리드 렌더링
+function getResponsiveGridSize(){
+  const holderWidth = gridHolderEl ? gridHolderEl.clientWidth : window.innerWidth;
+  const minSize = 20;
+  const maxSize = 35;
+  const minGap = 2;
+  const maxGap = 6;
+
+  const gapFor = value => Math.max(minGap, Math.min(maxGap, Math.floor(value / 8)));
+
+  let cellSize = Math.min(maxSize, Math.max(minSize, Math.floor((holderWidth - (COLS - 1) * 4) / COLS)));
+  if(cellSize < minSize) cellSize = minSize;
+
+  let cellGap = gapFor(cellSize);
+  while(cellSize > minSize && COLS * cellSize + (COLS - 1) * cellGap > holderWidth){
+    cellSize--;
+    cellGap = gapFor(cellSize);
+  }
+
+  return { cellSize: Math.max(minSize, Math.min(maxSize, cellSize)), cellGap };
+}
+
 function renderGrid(){
-  gridEl.style.gridTemplateColumns = `repeat(${COLS}, 40px)`;
-  gridEl.style.gridTemplateRows = `repeat(${ROWS}, 40px)`;
+  const { cellSize, cellGap } = getResponsiveGridSize();
+  gridEl.style.setProperty('--cell-size', `${cellSize}px`);
+  gridEl.style.setProperty('--cell-gap', `${cellGap}px`);
+  gridEl.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+  gridEl.style.gridTemplateRows = `repeat(${ROWS}, var(--cell-size))`;
+
+  const previousValues = {};
+  const previousClasses = {};
+  gridEl.querySelectorAll('input.cell').forEach(input => {
+    const key = `${input.dataset.r}_${input.dataset.c}`;
+    previousValues[key] = input.value;
+    previousClasses[key] = Array.from(input.classList).filter(cls => cls !== 'cell' && cls !== 'shared-cell');
+  });
+
   gridEl.innerHTML = '';
 
   for(let r=minR; r<=maxR; r++){
@@ -514,6 +551,8 @@ function renderGrid(){
         input.setAttribute('lang', 'ko');
         input.dataset.r = r;
         input.dataset.c = c;
+        if(previousValues[key] !== undefined) input.value = previousValues[key];
+        (previousClasses[key] || []).forEach(cls => input.classList.add(cls));
         input.addEventListener('input', () => {
           input.classList.remove('correct','wrong');
         });
@@ -605,6 +644,8 @@ resetBtn.addEventListener('click', resetPuzzle);
 
 renderLegend();
 renderGrid();
+window.addEventListener('resize', renderGrid);
+window.addEventListener('orientationchange', renderGrid);
 </script>
 </body>
 </html>
