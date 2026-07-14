@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아기 고양이 낱말 맞추기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FFF6EC;
+    --card: #FFFFFF;
+    --pink: #FF8FA3;
+    --pink-dark: #F16C86;
+    --blue: #7FC8F8;
+    --blue-dark: #52A9E0;
+    --yellow: #FFD166;
+    --green: #8FD694;
+    --text: #1d1818;
+    --text-soft: #9C8C89;
+    --shadow: 0 8px 0 rgba(0,0,0,0.06);
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 10% 15%, rgba(255,209,102,0.25) 0, transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(127,200,248,0.25) 0, transparent 40%),
+      var(--bg);
+    font-family: 'Gowun Dodum', sans-serif;
+    color: var(--text);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding: 24px 12px;
+  }
+  .wrap{ width:100%; max-width: 540px; }
+
+  h1{
+    font-family:'Jua', sans-serif;
+    text-align:center;
+    font-size: 24px;
+    color: var(--pink-dark);
+    margin: 4px 0 2px;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.8);
+  }
+  .sub{
+    text-align:center;
+    color: var(--text-soft);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .card{
+    background: var(--card);
+    border-radius: 28px;
+    padding: 20px 18px 24px;
+    box-shadow: var(--shadow), 0 2px 16px rgba(0,0,0,0.05);
+    border: 3px solid #FFE7D6;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mascot-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .mascot{
+    font-size: 36px;
+    display:inline-block;
+    animation: sway 2.4s ease-in-out infinite;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.08));
+  }
+  @keyframes sway{
+    0%,100%{ transform: rotate(-4deg) translateY(0); }
+    50%{ transform: rotate(4deg) translateY(-3px); }
+  }
+  .bubble{
+    font-size: 14px;
+    background: #FFF3E6;
+    border-radius: 14px;
+    padding: 8px 12px;
+    flex:1;
+    position: relative;
+    min-height: 18px;
+    line-height:1.4;
+  }
+  .bubble::before{
+    content:"";
+    position:absolute;
+    left:-6px; top:14px;
+    border-width:6px 8px 6px 0;
+    border-style:solid;
+    border-color: transparent #FFF3E6 transparent transparent;
+  }
+
+  /* 질문 힌트 목록 */
+  .legend{
+    display:flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 30px;
+    padding: 12px 12px;
+    background: #FFFFFF;
+    border: 2px solid #F2D9C3;
+    border-radius: 18px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .legend::before{
+    content:"";
+    position:absolute;
+    left: 50%;
+    bottom: -10px;
+    width: 18px;
+    height: 18px;
+    background: #FFFFFF;
+    border-left: 2px solid #F2D9C3;
+    border-bottom: 2px solid #F2D9C3;
+    transform: translateX(-50%) rotate(-45deg);
+    border-bottom-left-radius: 6px;
+  }
+  .legend-item{
+    display:flex;
+    gap: 8px;
+    padding: 10px 0;
+    align-items:flex-start;
+    border-bottom: 1px dashed #E7D2BC;
+    min-height: 34px;
+  }
+  .legend-item:last-child{
+    border-bottom: none;
+  }
+  .legend-item .badge{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 24px;
+    height: 24px;
+    font-family:'Jua', sans-serif;
+    font-size: 12px;
+    color: var(--pink-dark);
+    background:#fff;
+    border:1.5px solid #F2D9C3;
+    border-radius: 50%;
+    padding: 0;
+    line-height: 1;
+  }
+  .legend-item .qtext{
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text);
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+  .section-divider{
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #EADFD3 50%, transparent);
+    margin: 16px 0 24px;
+  }
+
+  .grid-holder{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 18px;
+    overflow: hidden;
+    padding-bottom: 4px;
+    width: 100%;
+  }
+  .grid{
+    display:grid;
+    gap: 0px;
+    width: fit-content;
+  }
+  .cellwrap{
+    position: relative;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cell,
+  .cell-block{
+    box-sizing: border-box;
+    width: 35px;
+    height: 35px;
+    border: 2px solid #F2D9C3;
+    border-radius: 8px;
+  }
+  .num-badge{
+    position:absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--blue-dark);
+    z-index: 2;
+    font-family:'Jua', sans-serif;
+    pointer-events:none;
+    line-height: 1;
+  }
+  .cell{
+    box-sizing: border-box;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    border: 2px solid #F2D9C3;
+    background: #FFFDFB;
+    text-align:center;
+    font-family:'Jua', sans-serif;
+    font-size: 18px;
+    color: var(--text);
+    outline:none;
+    transition: all .15s;
+    caret-color: var(--pink);
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  .cell:focus{
+    border-color: var(--blue);
+    background: #F1FAFF;
+    transform: scale(1.05);
+  }
+  .shared-cell{
+    background: #EAF6FF;
+  }
+  .cell.correct{
+    border-color: var(--green);
+    background: #F0FAF1;
+    color: #4CAF61;
+  }
+  .cell.overlap{
+    background: #FFE8F0;
+    border-color: #F7B7CC;
+  }
+  .cell.wrong{
+    border-color: var(--pink);
+    animation: shake .35s;
+  }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-4px); }
+    75%{ transform: translateX(4px); }
+  }
+  .cell-block{
+    box-sizing: border-box;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    border: 2px solid #F2D9C3;
+    background: repeating-linear-gradient(45deg, #EADFD3, #EADFD3 4px, #F5EAE0 4px, #F5EAE0 8px);
+    pointer-events:none;
+  }
+
+  .buttons{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button{
+    flex:1 1 0;
+    border:none;
+    border-radius: 16px;
+    padding: 13px 0;
+    font-family:'Jua', sans-serif;
+    font-size: 15px;
+    cursor:pointer;
+    color:#fff;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    transition: transform .08s;
+  }
+  button:active{ transform: translateY(3px); box-shadow: none; }
+  .btn-check{ background: var(--pink); }
+  .btn-retry{ background: var(--blue); }
+  .btn-reset{ background: var(--yellow); color: #6a4f16; }
+
+  .score{
+    text-align:center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-soft);
+  }
+  .score b{ color: var(--pink-dark); }
+
+  .confetti{
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .confetti span{
+    position:absolute;
+    top:-20px;
+    font-size: 20px;
+    animation: fall 1.4s ease-in forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(500px) rotate(200deg); opacity:0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🐱 CROSSWORD PUZZLE 🐱</h1>
+  <p class="sub">진운이 만든 아기 고양이 전용 퍼즐. 질문을 읽고 알맞은 정답을 채워보세요.</p>
+
+  <div class="card" id="gameCard">
+    <div class="confetti" id="confetti"></div>
+
+    <div class="mascot-row">
+      <div class="mascot" id="mascot">🐦‍⬛</div>
+      <div class="bubble" id="bubble">내 아기 고양이라면 이 퍼즐을 「완벽하게」 풀어낼 수 있을 거야.</div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="grid-holder">
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-check" id="checkBtn">정답 확인하기</button>
+      <button class="btn-retry" id="retryBtn">뒤로 가기</button>
+      <button class="btn-reset" id="resetBtn">초기화</button>
+    </div>
+
+    <div class="score">정답 칸 <b id="scoreNum">0</b> / <span id="totalNum">0</span></div>
+  </div>
+</div>
+
+<script>
+// 1) 문제 목록: 방향(A=가로, D=세로) + 시작 좌표(r,c) + 음절 배열
+//    syll 배열에서 null은 "띄어쓰기 자리"를 뜻해요 (까만 칸으로 표시됨)
+//    같은 좌표를 공유하는 답끼리 글자가 겹치도록 좌표를 맞춰놨어요.
+const WORDS = [
+  {
+    clue: '처음으로 당신과 새해를 함께 보내게 된 메모리는?',
+    dir:'D', r:0, c:1,
+    syll:['인','간','사']   // 인간사
+  },
+  {
+    clue: '49레벨에 획득하는 메시지는?',
+    dir:'A', r:0, c:8,
+    syll:['인','산','인','해']   //인산인해
+  },
+  {
+    clue: '사진 배경 「맑은 바다 일기」의 배경이 되는 장소는?',
+    dir:'D', r:0 , c:11,
+    syll:['해', '변']   //해변
+  },
+  {
+    clue: '당신이 메피스토의 전원을 끄기 위해 물 주기, 머리 때리기, 보석으로 낚기 등을 시도한 음성 통화는?',
+    dir:'D', r:1, c:5,
+    syll:['날','아','온','까','마','귀']   // 날아온까마귀
+  },
+  {
+    clue: '진운이 어린 시절 사막에서 노부인에게 주워진 이야기를 들려주는 메모리는?',
+    dir:'A', r:2, c:1,
+    syll:['사','라','진','오','아','시','스']   // 사라진오아시스
+  },
+  {
+    clue: '진운이 진정한 고양이 집사가 된 메모리는?',
+    dir:'D', r:3, c:8,
+    syll:['사','랑','하','는','고','양','이','덕','분']   // 사랑하는고양이덕분
+  },
+  {
+    clue: '진운의 대사 중 「나한테는 네가 ○○을 보는 것과 같아.」 에서 ○○에 들어갈 알맞은 단어는?',
+    dir:'A', r:4 , c:0,
+    syll:['태', '양']   //태양
+  },
+  {
+    clue: '진운의 별자리는?',
+    dir:'D', r:4, c:1,
+    syll:['양', '자', '리']   // 양자리
+  },
+  {
+    clue: '용은 꽃이 만발한 산골짜기에 머무는 걸 좋아해 라고 말한 메모리는?',
+    dir:'D', r:4, c:3,
+    syll:['만','개','한','꽃','의','골','짜','기']   // 만개한꽃의골짜기
+  },
+  {
+    clue: '「피의 영혼」에서 당신을 자신의 배우자로 칭하며 말한 대사는?',
+    dir:'D', r:4, c:11,
+    syll:['사','랑','하','는','나','의','부','인']  // 사랑하는나의부인
+  },
+  {
+    clue: '「명과 암의 세계」에서 예복을 입은 진운은 결혼식에서 어떤 역할일까요?',
+    dir:'A', r:5, c:10,
+    syll:['신','랑']   // 신랑
+  },
+  {
+    clue: '○○○는 아이들의 창문으로 조용히 찾아간다. 어떤 인형의 설명일까요?',
+    dir:'A', r:7, c:7,
+    syll:['꿈', '고', '래']   // 꿈고래
+  },
+ {
+    clue: '메피스토와 닮은 인형의 이름은?',
+    dir:'A', r:9, c:6,
+    syll:['까', '악', '이']   // 까악이
+  },
+ {
+    clue: '이번엔 내가 할까? 라는 대사가 나오는 데이트 컨텐츠는?',
+    dir:'A', r:11,c:0,
+    syll:['인','형','뽑','기']   // 인형뽑기
+  },
+];
+
+// 2) 단어 목록으로부터 칸 정보(cells)와 시작 번호(numbers)를 자동 계산
+const cells = {};   // key "r_c" -> { answer }
+
+WORDS.forEach(w => {
+  w.syll.forEach((ch, i) => {
+    const rr = w.dir === 'D' ? w.r + i : w.r;
+    const cc = w.dir === 'A' ? w.c + i : w.c;
+    const key = rr + '_' + cc;
+    if(!cells[key]){
+      cells[key] = { answer: ch };
+    }
+  });
+});
+
+const startKeys = [...new Set(WORDS.map(w => w.r + '_' + w.c))]
+  .sort((a,b) => {
+    const [ar,ac] = a.split('_').map(Number);
+    const [br,bc] = b.split('_').map(Number);
+    return ar - br || ac - bc;
+  });
+const numberOf = {};
+startKeys.forEach((k, i) => numberOf[k] = i + 1);
+WORDS.forEach(w => w.number = numberOf[w.r + '_' + w.c]);
+
+const sharedCellKeys = new Set();
+const coordinateCounts = {};
+WORDS.forEach(w => {
+  w.syll.forEach((_, i) => {
+    const rr = w.dir === 'D' ? w.r + i : w.r;
+    const cc = w.dir === 'A' ? w.c + i : w.c;
+    const key = rr + '_' + cc;
+    coordinateCounts[key] = (coordinateCounts[key] || 0) + 1;
+  });
+});
+Object.keys(coordinateCounts).forEach(key => {
+  if(coordinateCounts[key] > 1) sharedCellKeys.add(key);
+});
+
+// 그리드 범위 계산 (블록 칸도 포함)
+let minR=0,maxR=0,minC=0,maxC=0;
+Object.keys(cells).forEach(k=>{
+  const [r,c] = k.split('_').map(Number);
+  minR=Math.min(minR,r); maxR=Math.max(maxR,r);
+  minC=Math.min(minC,c); maxC=Math.max(maxC,c);
+});
+const ROWS = maxR-minR+1, COLS = maxC-minC+1;
+
+const gridEl = document.getElementById('grid');
+const legendEl = document.getElementById('legend');
+const bubbleEl = document.getElementById('bubble');
+const mascotEl = document.getElementById('mascot');
+const checkBtn = document.getElementById('checkBtn');
+const retryBtn = document.getElementById('retryBtn');
+const resetBtn = document.getElementById('resetBtn');
+const scoreNum = document.getElementById('scoreNum');
+const totalNum = document.getElementById('totalNum');
+const confettiEl = document.getElementById('confetti');
+
+const TOTAL_CELLS = Object.keys(cells).length;
+totalNum.textContent = TOTAL_CELLS;
+
+// 3) 질문 힌트 목록 렌더링
+function renderLegend(){
+  legendEl.innerHTML = '';
+  WORDS.forEach(w => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="badge">${w.number}</span><span class="qtext">${w.clue}</span>`;
+    legendEl.appendChild(item);
+  });
+}
+
+// 4) 그리드 렌더링
+function renderGrid(){
+  gridEl.style.gridTemplateColumns = `repeat(${COLS}, 40px)`;
+  gridEl.style.gridTemplateRows = `repeat(${ROWS}, 40px)`;
+  gridEl.innerHTML = '';
+
+  for(let r=minR; r<=maxR; r++){
+    for(let c=minC; c<=maxC; c++){
+      const key = r+'_'+c;
+      const wrap = document.createElement('div');
+      wrap.className = 'cellwrap';
+
+      if(cells[key]){
+        if(numberOf[key]){
+          const badge = document.createElement('span');
+          badge.className = 'num-badge';
+          badge.textContent = numberOf[key];
+          wrap.appendChild(badge);
+        }
+        const input = document.createElement('input');
+        input.className = 'cell';
+        if(sharedCellKeys.has(key)) input.classList.add('shared-cell');
+        input.maxLength = 1;
+        input.setAttribute('inputmode', 'text');
+        input.setAttribute('lang', 'ko');
+        input.dataset.r = r;
+        input.dataset.c = c;
+        input.addEventListener('input', () => {
+          input.classList.remove('correct','wrong');
+        });
+        wrap.appendChild(input);
+      } else {
+        const empty = document.createElement('div');
+        empty.className = 'cell-block';
+        wrap.appendChild(empty);
+      }
+
+      gridEl.appendChild(wrap);
+    }
+  }
+}
+
+function getInput(r,c){
+  return gridEl.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+}
+
+function moveToNext(r, c){
+  const cur = getInput(r,c);
+  if(!cur || cur.value.trim().length === 0) return;
+  let next = getInput(r, c+1) || getInput(r+1, c);
+  if(next) next.focus();
+}
+
+// 5) 채점
+function checkAnswer(){
+  let correctCount = 0;
+  Object.keys(cells).forEach(key => {
+    const [r,c] = key.split('_').map(Number);
+    const input = getInput(r,c);
+    const val = input.value.trim();
+    if(val === cells[key].answer){
+      input.classList.add('correct');
+      input.classList.remove('wrong');
+      correctCount++;
+    } else {
+      input.classList.add('wrong');
+      input.classList.remove('correct');
+    }
+  });
+  scoreNum.textContent = correctCount;
+
+  if(correctCount === TOTAL_CELLS){
+    bubbleEl.textContent = '우와! 정답을 전부 다 맞혔어요! 아기 고양이는 최고예요! 🎉';
+    mascotEl.textContent = '🐦‍⬛🎉';
+    launchConfetti();
+  } else {
+    bubbleEl.textContent = `${correctCount}칸을 맞혔어요! 분홍색 칸을 다시 볼까요?`;
+    mascotEl.textContent = '🐦‍⬛💭';
+  }
+}
+
+function launchConfetti(){
+  const emojis = ['🎉','✨','⭐','🌸','🎈'];
+  for(let i=0;i<18;i++){
+    const s = document.createElement('span');
+    s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left = Math.random()*100 + '%';
+    s.style.animationDelay = (Math.random()*0.3) + 's';
+    confettiEl.appendChild(s);
+    setTimeout(() => s.remove(), 1600);
+  }
+}
+
+function restart(){
+  scoreNum.textContent = 0;
+  bubbleEl.textContent = '내 아기 고양이라면 이 퍼즐을 「완벽하게」 풀어낼 수 있을 거야.';
+  mascotEl.textContent = '🐦‍⬛';
+  document.querySelectorAll('.cell').forEach(input => {
+    input.classList.remove('correct', 'wrong');
+  });
+}
+
+function resetPuzzle(){
+  document.querySelectorAll('.cell').forEach(input => {
+    input.value = '';
+    input.classList.remove('correct', 'wrong');
+  });
+  scoreNum.textContent = 0;
+  bubbleEl.textContent = '내 아기 고양이라면 이 퍼즐을 「완벽하게」 풀어낼 수 있을 거야.';
+  mascotEl.textContent = '🐦‍⬛';
+}
+
+checkBtn.addEventListener('click', checkAnswer);
+retryBtn.addEventListener('click', restart);
+resetBtn.addEventListener('click', resetPuzzle);
+
+renderLegend();
+renderGrid();
+</script>
+</body>
+</html>
